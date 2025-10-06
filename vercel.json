@@ -2,7 +2,7 @@
   "version": 2,
   "build":{
     "env":{
-      "JWT_SECRET": "your-secret-key"
+      "JWT_SECRET": "SECRET_KEY"
     }
   },
 
