@@ -849,6 +849,47 @@ document.getElementById("gerencia-btn").addEventListener("click", async (e) => {
     await checkAuthAndRedirect(\'gerencia.html\');
 });
 
-// ... (outras funções do script.js)
 
+
+    // Form submission with zoom-out animation
+    document.getElementById(\'loginForm\').addEventListener(\'submit\', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById(\'username\').value;
+      const password = document.getElementById(\'password\').value;
+      const errorMessage = document.getElementById(\'errorMessage\');
+      const loginContainer = document.querySelector(\'.login-container\');
+
+      const passwordHash = await sha256(password);
+
+      try {
+        const response = await fetch(\'/api/auth\', {
+          method: \'POST\',
+          headers: { \'Content-Type\': \'application/json\' },
+          body: JSON.stringify({ username, passwordHash })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          localStorage.setItem(\'jwtToken\', result.token); // Armazenar o token como \'jwtToken\'
+          loginContainer.classList.add(\'zoom-out\');
+          setTimeout(() => {
+            window.location.href = \'/sistema.html\'; // Redirecionar para a página principal após login
+          }, 600); // Match animation duration
+        } else {
+          errorMessage.classList.add(\'show\');
+        }
+      } catch (error) {
+        console.error(\'Erro:\', error);
+        errorMessage.classList.add(\'show\');
+      }
+    });
+
+    // Verificar autenticação ao carregar a página
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("jwtToken");
+      if (token) {
+        window.location.href = "/sistema.html";
+      }
+    });
+  
 
