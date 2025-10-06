@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="top-right-actions">
+            <div class="left-info">
+                <span id="welcomeMessage">Bem-vindo, Usuário!</span>
+                <span id="currentDateTime"></span>
+            </div>
+            <div class="right-buttons">
+                <button id="themeToggleBtn" aria-label="Alternar para tema escuro"><i class="fas fa-moon"></i></button>
+                <button id="logoutBtn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <div id="total">
+            <div id="summary">
+                <div class="summary-card">
+                    <h3>Total de Clientes</h3>
+                    <p id="totalClients">0</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Valor Total</h3>
+                    <p id="totalValue">R$ 0</p>
+                </div>
+            </div>
+        </div>
+
+         <div class="top-actions">
+            <button id="new-client-btn"><i class="fas fa-user-plus"></i> Novo Cliente</button>
+            <button id="panel-manager-btn" onclick="openPanelManager()"><i class="fas fa-cogs"></i> Gerenciar Painéis</button>
+            <button id="whatsapp-messages-btn" onclick="openWhatsAppMessagesModal()"><i class="fab fa-whatsapp"></i> Configurar Mensagens</button>
+            <button id="gerencia-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2">
+  <i class="fa-brands fa-youtube"></i> Gerência de pedidos
+</button>
+
+<!-- Modal -->
+<div id="modalGerencia" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-xl shadow-xl max-w-5xl w-full mx-4 relative overflow-hidden">
+    <button id="closeModal" class="absolute top-3 right-3 text-gray-600 hover:text-red-500 text-2xl font-bold">&times;</button>
+    <div id="modalContent" class="p-6 max-h-[80vh] overflow-y-auto">
+      <p class="text-center text-gray-500">Carregando conteúdo...</p>
+    </div>
+  </div>
+</div>
+
+        </div>
+
+        <div id="filters">
+            <input type="text" id="search" placeholder="Pesquisar clientes...">
+        </div>
+
+        <div id="clientTable">
+            <div class="group-header vencidos">
+                <span>Vencidos <i class="fas fa-chevron-down"></i></span>
+                <div class="group-info">
+                    <span class="notification-count" id="vencidos-count">0</span>
+                    <span class="group-total" id="vencidos-total">R$ 0</span>
+                </div>
+            </div>
+            <div class="group-content" id="vencidos-group"></div>
+
+            <div class="group-header vencendo">
+                <span>Vencendo (próximos 3 dias) <i class="fas fa-chevron-down"></i></span>
+                <div class="group-info">
+                    <span class="notification-count" id="vencendo-count">0</span>
+                    <span class="group-total" id="vencendo-total">R$ 0</span>
+                </div>
+            </div>
+            <div class="group-content" id="vencendo-group"></div>
+
+            <div class="group-header em-dia">
+                <span>Em Dia <i class="fas fa-chevron-down"></i></span>
+                <div class="group-info">
+                    <span class="notification-count" id="em-dia-count">0</span>
+                    <span class="group-total" id="em-dia-total">R$ 0</span>
+                </div>
+            </div>
+            <div class="group-content" id="em-dia-group"></div>
+
+            <div class="group-header todos" id="todos-group" style="display: none;">
+                <span>Todos os Clientes</span>
+            </div>
+            <div class="group-content" id="todos-content"></div>
+        </div>
+
+        <div id="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Novo Cliente</h2>
+                    <span class="close-btn" onclick="closeModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="clientForm">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="cliente" placeholder="Nome" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-tv"></i>
+                            <input type="text" id="tela" placeholder="Tela" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-percent"></i>
+                            <input type="number" id="desconto" placeholder="Desconto (%)">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-dollar-sign"></i>
+                            <input type="number" id="valor" placeholder="Valor" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-phone"></i>
+                            <input type="text" id="whats" placeholder="WhatsApp" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-th"></i>
+                            <select id="painel" required>
+                                <option value="">Selecione um painel</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-network-wired"></i>
+                            <input type="text" id="mac" placeholder="MAC">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-key"></i>
+                            <input type="text" id="safekey" placeholder="SafeKey">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-sticky-note"></i>
+                            <textarea id="observacoes" placeholder="Observações"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="vencimento" placeholder="Data de Vencimento" required>
+                        </div>
+                        <button type="submit"><i class="fas fa-save"></i> Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="panelManagerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Gerenciar Painéis</h2>
+                    <span class="close-btn" onclick="closePanelManager()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="panelForm" class="panel-form-grid">
+                        <div class="input-group">
+                            <i class="fas fa-th"></i>
+                            <input type="text" id="panelName" placeholder="Nome do Painel" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-link"></i>
+                            <input type="url" id="panelLink" placeholder="Link do Painel" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-dollar-sign"></i>
+                            <input type="text" id="valorCredito" placeholder="Valor do Crédito" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-toggle-on"></i>
+                            <select id="panelStatus" required>
+                                <option value="active">Ativo</option>
+                                <option value="inactive">Inativo</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="panelId">
+                        <button type="submit"><i class="fas fa-save"></i> Salvar Painel</button>
+                    </form>
+                    <ul id="panelList"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="whatsappMessagesModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configurar Mensagens do WhatsApp</h2>
+                    <span class="close-btn" onclick="closeWhatsAppMessagesModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="variables-info">
+                        <h3>Variáveis Disponíveis</h3>
+                        <ul>
+                            <li><code>{cliente}</code>: Nome do cliente</li>
+                            <li><code>{valor}</code>: Valor do plano</li>
+                            <li><code>{vencimento}</code>: Data de vencimento</li>
+                        </ul>
+                    </div>
+                    <form id="whatsappMessagesForm">
+                        <div class="input-group">
+                            <i class="fas fa-comment"></i>
+                            <textarea id="dueMessage" placeholder="Mensagem de Vencimento"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-comment-alt"></i>
+                            <textarea id="renewalMessage" placeholder="Mensagem de Renovação"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit"><i class="fas fa-save"></i> Salvar Mensagens</button>
+                            <button type="button" id="applyMessagesBtn"><i class="fas fa-check"></i> Aplicar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    
+
+
+    
+</body>
+</html>
