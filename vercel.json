@@ -6,7 +6,6 @@
     { "src": "/estilos.css", "dest": "/estilos.css" },
     { "src": "/grencia.html", "dest": "/gerencia.html" },
     { "src": "/scrip.js", "dest": "/script.js" },
-    { "src": "/vercel.json", "dest": "/vercel.json" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
