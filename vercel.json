@@ -3,10 +3,10 @@
   "routes": [
     { "src": "/api/auth", "dest": "/api/auth.js" },
     { "src": "/api/verify", "dest": "/api/verify.js" },
-    { "src": "/sistema.html", "dest": "/sistema.html" },
-    { "src": "/pagar.html", "dest": "/gerencia.html" },
-    { "src": "/scrip.js", "dest": "/script.js" },
     { "src": "/estilos.css", "dest": "/estilos.css" },
+    { "src": "/grencia.html", "dest": "/gerencia.html" },
+    { "src": "/scrip.js", "dest": "/script.js" },
+    { "src": "/vercel.json", "dest": "/vercel.json" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
