@@ -773,39 +773,35 @@ document.getElementById("modalGerencia").addEventListener("click", (e) => {
   }
 });
 
-    const modal = document.getElementById("modalGerencia");
+
+const modal = document.getElementById("modalGerencia");
 const modalBox = document.getElementById("modalBox");
-const content = document.getElementById("modalContent");
+const iframe = document.getElementById("modalIframe");
 const closeBtn = document.getElementById("closeModal");
 
-// Abrir modal e carregar conteúdo
-document.getElementById("gerencia-btn").addEventListener("click", async () => {
+document.getElementById("gerencia-btn").addEventListener("click", () => {
+  iframe.src = "https://ativacao-blue.vercel.app/filme.html"; // 🔗 Página externa
   modal.classList.remove("hidden");
+
+  // Animação de entrada
   setTimeout(() => {
     modal.classList.remove("opacity-0");
     modalBox.classList.remove("scale-95");
-  }, 10); // pequeno delay para animar
-  
-  content.innerHTML = "<p class='text-center text-gray-500'>Carregando conteúdo...</p>";
-  
-  try {
-    const response = await fetch("gerencia.html");
-    if (!response.ok) throw new Error("Erro ao carregar a página.");
-    const html = await response.text();
-    content.innerHTML = html;
-  } catch (err) {
-    content.innerHTML = `<p class='text-red-500 text-center'>Erro ao carregar o conteúdo: ${err.message}</p>`;
-  }
+  }, 10);
 });
 
 // Fechar modal
+function fecharModal() {
+  modal.classList.add("opacity-0");
+  modalBox.classList.add("scale-95");
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    iframe.src = ""; // Limpa iframe ao fechar
+  }, 300);
+}
+
 closeBtn.addEventListener("click", fecharModal);
 modal.addEventListener("click", (e) => {
   if (e.target === modal) fecharModal();
 });
 
-function fecharModal() {
-  modal.classList.add("opacity-0");
-  modalBox.classList.add("scale-95");
-  setTimeout(() => modal.classList.add("hidden"), 300); // espera a animação terminar
-}
