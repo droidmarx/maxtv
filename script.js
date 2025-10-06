@@ -805,6 +805,7 @@ modal.addEventListener("click", (e) => {
   if (e.target === modal) fecharModal();
 });
 
+<<<<<<< HEAD
 
 
 
@@ -813,21 +814,39 @@ async function checkAuthAndRedirect(page) {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         window.location.href = '/index.html'; // Redireciona para a página de login se não houver token
+=======
+// Função para verificar o token JWT antes de acessar páginas protegidas
+async function checkAuthAndRedirect(page) {
+    const token = localStorage.getItem(\'jwtToken\');
+    if (!token) {
+        window.location.href = \'/index.html\'; // Redireciona para a página de login se não houver token
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
         return false;
     }
 
     try {
+<<<<<<< HEAD
         // Tenta acessar a rota protegida com o token
         const response = await fetch(`/${page}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
+=======
+        const response = await fetch(`/${page}`, {
+            headers: {
+                \'Authorization\': `Bearer ${token}`
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
             }
         });
 
         if (response.status === 401 || response.status === 403) {
+<<<<<<< HEAD
             // Token inválido ou expirado, redireciona para login
             localStorage.removeItem('jwtToken');
             window.location.href = '/index.html';
+=======
+            localStorage.removeItem(\'jwtToken\');
+            window.location.href = \'/index.html\';
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
             return false;
         }
 
@@ -835,7 +854,10 @@ async function checkAuthAndRedirect(page) {
             throw new Error(`Erro ao carregar a página protegida: ${response.statusText}`);
         }
 
+<<<<<<< HEAD
         // Se a resposta for OK, significa que a API de proteção serviu a página
+=======
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
         const htmlContent = await response.text();
         document.open();
         document.write(htmlContent);
@@ -843,13 +865,20 @@ async function checkAuthAndRedirect(page) {
         return true;
 
     } catch (error) {
+<<<<<<< HEAD
         console.error('Erro na verificação de autenticação:', error);
         localStorage.removeItem('jwtToken');
         window.location.href = '/index.html';
+=======
+        console.error(\'Erro na verificação de autenticação:\', error);
+        localStorage.removeItem(\'jwtToken\');
+        window.location.href = \'/index.html\';
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
         return false;
     }
 }
 
+<<<<<<< HEAD
 // Modificar o evento de clique do botão 'gerencia-btn' para usar a nova função de verificação
 
 
@@ -921,4 +950,54 @@ async function login(username, passwordHash) {
 
 // Para o botão de logout, garantir que ele chame a função logout
 // document.getElementById("logout-btn").addEventListener("click", logout);
+=======
+document.getElementById("gerencia-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await checkAuthAndRedirect(\'gerencia.html\');
+});
+
+
+
+    // Form submission with zoom-out animation
+    document.getElementById(\'loginForm\').addEventListener(\'submit\', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById(\'username\').value;
+      const password = document.getElementById(\'password\').value;
+      const errorMessage = document.getElementById(\'errorMessage\');
+      const loginContainer = document.querySelector(\'.login-container\');
+
+      const passwordHash = await sha256(password);
+
+      try {
+        const response = await fetch(\'/api/auth\', {
+          method: \'POST\',
+          headers: { \'Content-Type\': \'application/json\' },
+          body: JSON.stringify({ username, passwordHash })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          localStorage.setItem(\'jwtToken\', result.token); // Armazenar o token como \'jwtToken\'
+          loginContainer.classList.add(\'zoom-out\');
+          setTimeout(() => {
+            window.location.href = \'/sistema.html\'; // Redirecionar para a página principal após login
+          }, 600); // Match animation duration
+        } else {
+          errorMessage.classList.add(\'show\');
+        }
+      } catch (error) {
+        console.error(\'Erro:\', error);
+        errorMessage.classList.add(\'show\');
+      }
+    });
+
+    // Verificar autenticação ao carregar a página
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("jwtToken");
+      if (token) {
+        window.location.href = "/sistema.html";
+      }
+    });
+  
+>>>>>>> c67a84e355ee5e261f263f5e64e8eff2dc5ea60e
 
