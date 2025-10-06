@@ -805,3 +805,120 @@ modal.addEventListener("click", (e) => {
   if (e.target === modal) fecharModal();
 });
 
+
+
+
+// Função para verificar o token JWT antes de acessar páginas protegidas
+async function checkAuthAndRedirect(page) {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        window.location.href = '/index.html'; // Redireciona para a página de login se não houver token
+        return false;
+    }
+
+    try {
+        // Tenta acessar a rota protegida com o token
+        const response = await fetch(`/${page}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            // Token inválido ou expirado, redireciona para login
+            localStorage.removeItem('jwtToken');
+            window.location.href = '/index.html';
+            return false;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar a página protegida: ${response.statusText}`);
+        }
+
+        // Se a resposta for OK, significa que a API de proteção serviu a página
+        const htmlContent = await response.text();
+        document.open();
+        document.write(htmlContent);
+        document.close();
+        return true;
+
+    } catch (error) {
+        console.error('Erro na verificação de autenticação:', error);
+        localStorage.removeItem('jwtToken');
+        window.location.href = '/index.html';
+        return false;
+    }
+}
+
+// Modificar o evento de clique do botão 'gerencia-btn' para usar a nova função de verificação
+
+
+document.getElementById("gerencia-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const isAuthenticated = await checkAuthAndRedirect('gerencia.html');
+    if (isAuthenticated) {
+        // Se autenticado, a página já foi carregada pela função checkAuthAndRedirect
+        // O código abaixo para o modal de iframe pode ser removido ou adaptado se 'gerencia.html' for carregado diretamente
+        // ou se o modal for para outro propósito.
+        // Por enquanto, vou assumir que 'gerencia.html' será carregado diretamente na janela principal.
+        // Se a intenção é carregar 'gerencia.html' dentro de um modal/iframe, a lógica precisará ser ajustada.
+        // Para este problema, o foco é garantir que o acesso a 'gerencia.html' seja protegido.
+    }
+});
+
+// Adicionar uma função de login para salvar o token JWT
+async function login(username, passwordHash) {
+    try {
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, passwordHash })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem('jwtToken', data.token);
+            window.location.href = '/gerencia.html'; // Redireciona para a página protegida após o login
+        } else {
+            showToast(data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Erro no login:', error);
+        showToast('Erro ao tentar fazer login.', 'error');
+    }
+}
+
+// Exemplo de como o formulário de login pode chamar a função login
+// document.getElementById('loginForm').addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//     const username = document.getElementById('username').value;
+//     const password = document.getElementById('password').value; // A senha deve ser hashed antes de enviar
+//     // Para fins de demonstração, estou usando 'password' diretamente, mas em um ambiente real, seria 'passwordHash'
+//     await login(username, password);
+// });
+
+// Ao carregar a página, verificar se o usuário já está autenticado para páginas protegidas
+// Esta lógica deve ser aplicada em 'gerencia.html' e 'sistema.html' ou em um script que é carregado por elas.
+// Para o 'index.html', não é necessário verificar, pois é a página de login.
+// No entanto, se o 'script.js' é carregado em todas as páginas, podemos adicionar uma verificação inicial.
+
+// if (window.location.pathname === '/gerencia.html' || window.location.pathname === '/sistema.html') {
+//     checkAuthAndRedirect(window.location.pathname.substring(1));
+// }
+
+// A função `logout` já existe, mas pode ser melhorada para limpar o token
+// function logout() {
+//     localStorage.removeItem('jwtToken'); // Adicionar esta linha
+//     localStorage.removeItem('theme');
+//     localStorage.removeItem('dueMessage');
+//     localStorage.removeItem('renewalMessage');
+//     showToast("Logout realizado com sucesso!", "success");
+//     setTimeout(() => window.location.href = "index.html", 1000);
+// }
+
+// Para o botão de logout, garantir que ele chame a função logout
+// document.getElementById("logout-btn").addEventListener("click", logout);
+
