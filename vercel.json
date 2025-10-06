@@ -4,6 +4,7 @@
     { "src": "/api/auth", "dest": "/api/auth.js" },
     { "src": "/api/verify", "dest": "/api/verify.js" },
     { "src": "/estilos.css", "dest": "/estilos.css" },
+    { "src": "/sistema.html", "dest": "/sistema.html" },
     { "src": "/grencia.html", "dest": "/gerencia.html" },
     { "src": "/scrip.js", "dest": "/script.js" },
     { "src": "/(.*)", "dest": "/index.html" }
