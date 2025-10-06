@@ -5,8 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="estilos.css">
+
+    <!-- 🔒 Verificação de Autenticação -->
+    <script>
+      async function verifyToken() {
+        const token = localStorage.getItem('authToken');
+
+        // Se não tiver token → volta para o login
+        if (!token) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/verify', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            }
+          });
+
+          const result = await response.json();
+
+          // Se o token for inválido ou expirado → remove e redireciona
+          if (!result.valid) {
+            localStorage.removeItem('authToken');
+            window.location.href = 'index.html';
+          } else {
+            // Exibe o nome do usuário logado (caso venha do backend)
+            if (result.user && result.user.username) {
+              document.addEventListener("DOMContentLoaded", () => {
+                const welcome = document.getElementById("welcomeMessage");
+                if (welcome) welcome.textContent = `Bem-vindo, ${result.user.username}!`;
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao verificar token:', error);
+          localStorage.removeItem('authToken');
+          window.location.href = 'index.html';
+        }
+      }
+
+      verifyToken();
+    </script>
 </head>
 
 <body>
@@ -35,24 +80,22 @@
             </div>
         </div>
 
-         <div class="top-actions">
+        <div class="top-actions">
             <button id="new-client-btn"><i class="fas fa-user-plus"></i> Novo Cliente</button>
             <button id="panel-manager-btn" onclick="openPanelManager()"><i class="fas fa-cogs"></i> Gerenciar Painéis</button>
             <button id="whatsapp-messages-btn" onclick="openWhatsAppMessagesModal()"><i class="fab fa-whatsapp"></i> Configurar Mensagens</button>
+
             <button id="gerencia-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition">
-  <i class="fa-brands fa-youtube"></i> Gerência de pedidos
-</button>
+              <i class="fa-brands fa-youtube"></i> Gerência de pedidos
+            </button>
 
-
-<!-- Modal -->
-<div id="modalGerencia" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 transition-opacity duration-300 opacity-0">
-  <div id="modalBox" class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] mx-4 relative transform scale-95 transition-transform duration-300 overflow-hidden">
-    <button id="closeModal" class="absolute top-3 right-4 text-gray-600 hover:text-red-500 text-3xl font-bold z-10">&times;</button>
-    <iframe id="modalIframe" src="" class="w-full h-full border-0"></iframe>
-  </div>
-</div>
-
-
+            <!-- Modal Gerência -->
+            <div id="modalGerencia" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 transition-opacity duration-300 opacity-0">
+              <div id="modalBox" class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] mx-4 relative transform scale-95 transition-transform duration-300 overflow-hidden">
+                <button id="closeModal" class="absolute top-3 right-4 text-gray-600 hover:text-red-500 text-3xl font-bold z-10">&times;</button>
+                <iframe id="modalIframe" src="" class="w-full h-full border-0"></iframe>
+              </div>
+            </div>
         </div>
 
         <div id="filters">
@@ -93,6 +136,7 @@
             <div class="group-content" id="todos-content"></div>
         </div>
 
+        <!-- Modal Novo Cliente -->
         <div id="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -149,6 +193,7 @@
             </div>
         </div>
 
+        <!-- Modal Gerenciar Painéis -->
         <div id="panelManagerModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -184,6 +229,7 @@
             </div>
         </div>
 
+        <!-- Modal Configuração de Mensagens WhatsApp -->
         <div id="whatsappMessagesModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -219,9 +265,5 @@
     </div>
 
     <script src="script.js"></script>
-    
-
-
-    
 </body>
 </html>
