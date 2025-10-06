@@ -1,28 +1,28 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' });
-  }
-
-  const { token } = req.body;
-
-  if (!token) {
-    return res.status(401).json({ valid: false, error: 'Token não fornecido' });
+  // Aceita apenas requisições POST
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido" });
   }
 
   try {
-    // Verifica o token usando a chave secreta
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Token não fornecido" });
+    }
+
+    // Extrai o token do cabeçalho
+    const token = authHeader.split(" ")[1];
+
+    // Verifica o token usando a mesma chave secreta usada no /api/auth.js
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Retorna valid: true e os dados do payload (username e fullName)
-    return res.status(200).json({
-      valid: true,
-      username: decoded.username,
-      fullName: decoded.fullName
-    });
-  } catch (error) {
-    console.error('Erro ao verificar token:', error);
-    return res.status(401).json({ valid: false, error: 'Token inválido ou expirado' });
+
+    // Se chegou aqui, o token é válido
+    return res.status(200).json({ message: "Token válido", user: decoded });
+  } catch (err) {
+    console.error("Erro na verificação do token:", err.message);
+    return res.status(401).json({ error: "Token inválido ou expirado" });
   }
 };
