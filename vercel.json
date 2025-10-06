@@ -1,18 +1,14 @@
 {
   "version": 2,
   "build":{
-    "env":{
-      "JWT_SECRET": "SECRET_KEY"
-    }
-  },
 
   "routes": [
     { "src": "/api/auth", "dest": "/api/auth.js" },
     { "src": "/api/verify", "dest": "/api/verify.js" },
     { "src": "/estilos.css", "dest": "/estilos.css" },
     { "src": "/script.js", "dest": "/script.js" },
-    { "src": "/gerencia.html", "dest": "/api/protected.js?page=gerencia.html" },
-    { "src": "/sistema.html", "dest": "/api/protected.js?page=sistema.html" },
+    { "src": "/gerencia.html", "dest": "gerencia.html" },
+    { "src": "/sistema.html", "dest": "sistema.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
