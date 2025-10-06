@@ -805,3 +805,50 @@ modal.addEventListener("click", (e) => {
   if (e.target === modal) fecharModal();
 });
 
+// Função para verificar o token JWT antes de acessar páginas protegidas
+async function checkAuthAndRedirect(page) {
+    const token = localStorage.getItem(\'jwtToken\');
+    if (!token) {
+        window.location.href = \'/index.html\'; // Redireciona para a página de login se não houver token
+        return false;
+    }
+
+    try {
+        const response = await fetch(`/${page}`, {
+            headers: {
+                \'Authorization\': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem(\'jwtToken\');
+            window.location.href = \'/index.html\';
+            return false;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Erro ao carregar a página protegida: ${response.statusText}`);
+        }
+
+        const htmlContent = await response.text();
+        document.open();
+        document.write(htmlContent);
+        document.close();
+        return true;
+
+    } catch (error) {
+        console.error(\'Erro na verificação de autenticação:\', error);
+        localStorage.removeItem(\'jwtToken\');
+        window.location.href = \'/index.html\';
+        return false;
+    }
+}
+
+document.getElementById("gerencia-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await checkAuthAndRedirect(\'gerencia.html\');
+});
+
+// ... (outras funções do script.js)
+
+
