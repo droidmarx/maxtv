@@ -119,7 +119,7 @@
       border-radius: 3px;
     }
 
-    .input-group .toggle-password {
+    .toggle-password {
       position: absolute;
       right: 12px;
       top: 50%;
@@ -133,29 +133,13 @@
       display: none;
     }
 
-    .input-group .toggle-password.visible {
+    .toggle-password.visible {
       display: block;
     }
 
-    .input-group .toggle-password:hover {
+    .toggle-password:hover {
       color: #34D399;
       transform: translateY(-50%) scale(1.2);
-    }
-
-    .input-group .ripple {
-      position: absolute;
-      background: rgba(52, 211, 153, 0.3);
-      border-radius: 50%;
-      transform: scale(0);
-      animation: ripple 0.6s linear;
-      pointer-events: none;
-    }
-
-    @keyframes ripple {
-      to {
-        transform: scale(4);
-        opacity: 0;
-      }
     }
 
     .login-btn {
@@ -232,7 +216,6 @@
         padding: 1.5rem;
         margin: 1rem;
       }
-
       .login-container h2 {
         font-size: 1.5rem;
       }
@@ -241,6 +224,7 @@
 </head>
 <body>
   <canvas class="tv-canvas"></canvas>
+
   <div class="login-container">
     <h2>Sistema de Gerenciamento de TV</h2>
     <form id="loginForm">
@@ -259,13 +243,13 @@
   </div>
 
   <script>
-    // Updated particle animation for a more modern TV signal effect
+    // Efeito TV de fundo
     const canvas = document.querySelector('.tv-canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const particles = [];
+
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
@@ -273,17 +257,14 @@
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 2 - 1;
         this.speedY = Math.random() * 2 - 1;
-        this.color = `rgba(16, 185, 129, ${Math.random() * 0.5 + 0.2})`;
+        this.color = `rgba(16,185,129,${Math.random() * 0.5 + 0.2})`;
       }
-
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
-
-        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
-        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
       }
-
       draw() {
         ctx.fillStyle = this.color;
         ctx.beginPath();
@@ -293,81 +274,32 @@
     }
 
     function initParticles() {
-      for (let i = 0; i < 200; i++) {
-        particles.push(new Particle());
-      }
+      for (let i = 0; i < 200; i++) particles.push(new Particle());
     }
-
     function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-      });
+      particles.forEach(p => { p.update(); p.draw(); });
       requestAnimationFrame(animateParticles);
     }
-
-    initParticles();
-    animateParticles();
-
+    initParticles(); animateParticles();
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     });
 
-    // Enhanced ripple effect on input focus
-    document.querySelectorAll('.input-group input').forEach(input => {
-      input.addEventListener('focus', function(e) {
-        const rect = this.getBoundingClientRect();
-        const ripple = document.createElement('span');
-        ripple.className = 'ripple';
-        const diameter = Math.max(this.clientWidth, this.clientHeight);
-        const radius = diameter / 2;
-        ripple.style.width = ripple.style.height = `${diameter}px`;
-        ripple.style.left = `${e.clientX - rect.left - radius}px`;
-        ripple.style.top = `${e.clientY - rect.top - radius}px`;
-        this.parentElement.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-      });
-    });
-
-    // Toggle password visibility
+    // Mostrar/ocultar senha
     const passwordInput = document.getElementById('password');
     const togglePassword = document.querySelector('.toggle-password');
-
-    function togglePasswordVisibility() {
+    togglePassword.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
       togglePassword.textContent = isPassword ? '👀' : '🙈';
-    }
-
-    togglePassword.addEventListener('click', togglePasswordVisibility);
-
-    // Show/hide toggle button based on password input
-    passwordInput.addEventListener('input', function() {
-      togglePassword.classList.toggle('visible', this.value.length > 0);
+    });
+    passwordInput.addEventListener('input', () => {
+      togglePassword.classList.toggle('visible', passwordInput.value.length > 0);
     });
 
-    // Toast notification
-    function showToast(message) {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Logout function
-    function logout() {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('theme');
-      localStorage.removeItem('dueMessage');
-      localStorage.removeItem('renewalMessage');
-      showToast("Logout realizado com sucesso!");
-      setTimeout(() => window.location.href = 'index.html', 1000);
-    }
-
-    // SHA-256 hashing
+    // Hash SHA256
     async function sha256(str) {
       const msgBuffer = new TextEncoder().encode(str);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -375,42 +307,47 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // Form submission with zoom-out animation
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    // Toast
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Logout automático se já estiver logado
+    if (localStorage.getItem('authToken')) {
+      localStorage.removeItem('authToken');
+      showToast("Sessão anterior encerrada.");
+    }
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const passwordHash = await sha256(document.getElementById('password').value);
       const errorMessage = document.getElementById('errorMessage');
       const loginContainer = document.querySelector('.login-container');
 
-      const passwordHash = await sha256(password);
-
       try {
-        const response = await fetch('/api/auth', {
+        const res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, passwordHash })
         });
-
-        const result = await response.json();
-        if (result.success) {
-          localStorage.setItem('authToken', result.token);
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('authToken', data.token);
           loginContainer.classList.add('zoom-out');
-          setTimeout(() => {
-            window.location.href = 'sistema.html';
-          }, 600); // Match animation duration
+          setTimeout(() => window.location.href = 'sistema.html', 600);
         } else {
           errorMessage.classList.add('show');
         }
-      } catch (error) {
-        console.error('Erro:', error);
+      } catch {
         errorMessage.classList.add('show');
       }
     });
-    // Auto-logout if authToken exists
-    if (localStorage.getItem('authToken')) {
-      logout();
-    }
   </script>
 </body>
 </html>
