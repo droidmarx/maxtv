@@ -18,14 +18,16 @@
       }
     }
 
-    // ✅ Verifica se existe token no localStorage antes de carregar a página
+    // ✅ Verificação de token com logout automático
     document.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("token");
       if (!token) {
+        // Remove token caso exista algo corrompido
+        localStorage.removeItem("token");
         alert("Sessão expirada. Faça login novamente.");
         window.location.href = "index.html"; // redireciona para login
       } else {
-        carregarPedidos(); // se existir token, carrega os pedidos normalmente
+        carregarPedidos(); // carrega pedidos se token válido existir
       }
     });
   </script>
