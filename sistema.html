@@ -9,56 +9,54 @@
     <link rel="stylesheet" href="estilos.css">
 
     <!-- 🔒 Verificação de Autenticação -->
-  <script>
-    async function verifyToken() {
-      const token = localStorage.getItem('authToken');
+    <script>
+      async function verifyToken() {
+        const token = localStorage.getItem('authToken');
 
-      // Se não tiver token → volta para o login
-      if (!token) {
-        window.location.href = 'index.html';
-        return;
-      }
+        // Se não tiver token → volta para o login
+        if (!token) {
+          window.location.href = 'index.html';
+          return;
+        }
 
-      try {
-        const response = await fetch('/api/verify', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+        try {
+          const response = await fetch('/api/verify', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            }
+          });
+
+          const result = await response.json();
+
+          // Se o token for inválido ou expirado → remove e redireciona
+          if (!result.valid) {
+            localStorage.removeItem('authToken');
+            window.location.href = 'index.html';
+          } else {
+            // ✅ Atualiza imediatamente a mensagem de boas-vindas com fullName
+            const welcome = document.getElementById("welcomeMessage");
+            if (welcome && result.user && result.user.fullName) {
+              welcome.textContent = `Bem-vindo, ${result.user.fullName}!`;
+            }
           }
-        });
-
-        const result = await response.json();
-
-        // Se o token for inválido ou expirado → remove e redireciona
-        if (!result.valid) {
+        } catch (error) {
+          console.error('Erro ao verificar token:', error);
           localStorage.removeItem('authToken');
           window.location.href = 'index.html';
-        } else {
-          // Exibe o nome completo do usuário logado (fullName)
-          if (result.user && result.user.fullName) {
-            document.addEventListener("DOMContentLoaded", () => {
-              const welcome = document.getElementById("welcomeMessage");
-              if (welcome) welcome.textContent = `Bem-vindo, ${result.user.fullName}!`;
-            });
-          }
         }
-      } catch (error) {
-        console.error('Erro ao verificar token:', error);
+      }
+
+      // Chamada inicial
+      verifyToken();
+
+      // Função de logout
+      function logout() {
         localStorage.removeItem('authToken');
         window.location.href = 'index.html';
       }
-    }
-
-    // Chamada inicial
-    verifyToken();
-
-    // Função de logout
-    function logout() {
-      localStorage.removeItem('authToken');
-      window.location.href = 'index.html';
-    }
-  </script>
+    </script>
 </head>
 
 <body>
@@ -271,7 +269,6 @@
         </div>
     </div>
 
-    
     <script src="script.js"></script>
 </body>
 </html>
