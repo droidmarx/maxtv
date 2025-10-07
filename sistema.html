@@ -9,49 +9,56 @@
     <link rel="stylesheet" href="estilos.css">
 
     <!-- 🔒 Verificação de Autenticação -->
-    <script>
-      async function verifyToken() {
-        const token = localStorage.getItem('authToken');
+  <script>
+    async function verifyToken() {
+      const token = localStorage.getItem('authToken');
 
-        // Se não tiver token → volta para o login
-        if (!token) {
-          window.location.href = 'index.html';
-          return;
-        }
-
-        try {
-          const response = await fetch('/api/verify', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` 
-            }
-          });
-
-          const result = await response.json();
-
-          // Se o token for inválido ou expirado → remove e redireciona
-          if (!result.valid) {
-            localStorage.removeItem('authToken');
-            window.location.href = 'index.html';
-          } else {
-            // Exibe o nome do usuário logado (caso venha do backend)
-            if (result.user && result.user.username) {
-              document.addEventListener("DOMContentLoaded", () => {
-                const welcome = document.getElementById("welcomeMessage");
-                if (welcome) welcome.textContent = `Bem-vindo, ${result.user.username}!`;
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Erro ao verificar token:', error);
-          localStorage.removeItem('authToken');
-          window.location.href = 'index.html';
-        }
+      // Se não tiver token → volta para o login
+      if (!token) {
+        window.location.href = 'index.html';
+        return;
       }
 
-      verifyToken();
-    </script>
+      try {
+        const response = await fetch('/api/verify', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          }
+        });
+
+        const result = await response.json();
+
+        // Se o token for inválido ou expirado → remove e redireciona
+        if (!result.valid) {
+          localStorage.removeItem('authToken');
+          window.location.href = 'index.html';
+        } else {
+          // Exibe o nome completo do usuário logado (fullName)
+          if (result.user && result.user.fullName) {
+            document.addEventListener("DOMContentLoaded", () => {
+              const welcome = document.getElementById("welcomeMessage");
+              if (welcome) welcome.textContent = `Bem-vindo, ${result.user.fullName}!`;
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao verificar token:', error);
+        localStorage.removeItem('authToken');
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Chamada inicial
+    verifyToken();
+
+    // Função de logout
+    function logout() {
+      localStorage.removeItem('authToken');
+      window.location.href = 'index.html';
+    }
+  </script>
 </head>
 
 <body>
@@ -264,12 +271,7 @@
         </div>
     </div>
 
-    <script>   // Função para atualizar a mensagem de boas-vindas
-  function updateWelcomeMessage(fullName) {
-    document.getElementById('welcomeMessage').textContent = 
-      `Bem vindo ${fullName}`;
-  }
-    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>
