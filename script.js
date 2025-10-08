@@ -45,12 +45,12 @@
         window.location.href = 'index.html';
       }
 
-const API_URL = "https://66d39f5c184dce1713d09736.mockapi.io/Api/v1/clientes";
+
+        const API_URL = "https://66d39f5c184dce1713d09736.mockapi.io/Api/v1/clientes";
 const PANELS_API_URL = "https://66d39f5c184dce1713d09736.mockapi.io/Api/v1/paineis";
 let clients = [];
 let editingIndex = null;
 let openDetail = null;
-let isSaving = false;
 
 const DEFAULT_DUE_MESSAGE = `Olá {cliente}, tudo bem? 😊\n\n🚨 Para evitar qualquer interrupção no seu acesso, *lembramos que seu plano vence em {vencimento} às 23:59.*\n\n📅 Faça o pagamento de R$ {valor} via Pix para o número 11915370708.\n\n💳 Após o pagamento, envie o comprovante e continue aproveitando sem preocupações!\n\nAgradecemos pela confiança! 💙`;
 const DEFAULT_RENEWAL_MESSAGE = `Olá {cliente}!\n\n✅ Seu plano foi renovado com sucesso!\n\n📅 *Próximo vencimento: {vencimento}.*\n\n💳 Qualquer dúvida, é só chamar!`;
@@ -84,6 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const vencidosHeader = document.querySelector('.group-header.vencidos');
     const vencendoHeader = document.querySelector('.group-header.vencendo');
     const emDiaHeader = document.querySelector('.group-header.em-dia');
+    const clientForm = document.getElementById('clientForm');
+    const panelForm = document.getElementById('panelForm');
 
     if (newClientBtn) {
         newClientBtn.addEventListener('click', () => openModal());
@@ -126,6 +128,24 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.error("Cabeçalho 'em-dia' não encontrado.");
     }
+
+    if (clientForm) {
+        clientForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveClient();
+        });
+    } else {
+        console.error("Elemento com ID 'clientForm' não encontrado.");
+    }
+
+    if (panelForm) {
+        panelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await savePanel();
+        });
+    } else {
+        console.error("Elemento com ID 'panelForm' não encontrado.");
+    }
 });
 
 function updateDateTime() {
@@ -157,7 +177,7 @@ async function loadClients() {
     });
     try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         clients = await response.json();
         clients.sort((a, b) => new Date(a.vencimento) - new Date(b.vencimento));
         await renderClients(clients);
@@ -166,7 +186,7 @@ async function loadClients() {
         clientTable.querySelectorAll(".group-content").forEach(group => {
             group.innerHTML = '<div style="padding: 16px">Erro ao carregar os dados.</div>';
         });
-        showToast("Erro ao carregar os clientes.", "error");
+        showToast(`Erro ao carregar os clientes: ${e.message}`, "error");
     }
 }
 
@@ -277,7 +297,7 @@ async function renderClients(clients) {
     const searchTerm = searchInput ? searchInput.value.trim() : '';
     if (searchTerm !== '') {
         document.getElementById("clientTable").querySelectorAll(".group-header:not(.todos), .group-content:not(#todos-content)").forEach(el => el.style.display = 'none');
-        document.getElementById("todos-group").style.display = '';
+        document.getElementById("todos-group").style.display = 'block';
         todosContent.classList.add('open');
         const filteredClients = clients.filter(client => 
             client.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -317,12 +337,14 @@ function validateMessage(message) {
 async function fetchPanels() {
     try {
         const response = await fetch(PANELS_API_URL);
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         const data = await response.json();
+        updatePanelList(data);
+        updatePanelSelect(data);
         return data;
     } catch (e) {
         console.error("Erro ao buscar painéis:", e);
-        showToast("Erro ao buscar os painéis.", "error");
+        showToast(`Erro ao buscar os painéis: ${e.message}`, "error");
         return [];
     }
 }
@@ -412,43 +434,72 @@ async function saveClient() {
     const clientForm = document.getElementById("clientForm");
     if (!clientForm) {
         console.error("Elemento com ID 'clientForm' não encontrado.");
+        showToast("Erro: Formulário de cliente não encontrado!", "error");
         return;
     }
+
+    // Validar campos obrigatórios
     const client = {
-        cliente: document.getElementById("cliente").value,
-        tela: document.getElementById("tela").value,
+        cliente: document.getElementById("cliente").value.trim(),
+        tela: document.getElementById("tela").value.trim(),
         desconto: parseFloat(document.getElementById("desconto").value) || 0,
         valor: parseFloat(document.getElementById("valor").value) || 0,
-        whats: document.getElementById("whats").value,
-        painel: document.getElementById("painel").value,
-        mac: document.getElementById("mac").value,
-        safekey: document.getElementById("safekey").value,
-        observacoes: document.getElementById("observacoes").value,
-        vencimento: document.getElementById("vencimento").value,
+        whats: document.getElementById("whats").value.trim(),
+        painel: document.getElementById("painel").value.trim(),
+        mac: document.getElementById("mac").value.trim(),
+        safekey: document.getElementById("safekey").value.trim(),
+        observacoes: document.getElementById("observacoes").value.trim(),
+        vencimento: document.getElementById("vencimento").value.trim(),
     };
-    client.valor = (client.valor * (1 - client.desconto / 100)).toFixed(2);
-    if (isNaN(client.valor) || client.valor <= 0) {
-        showToast("Por favor, insira um valor válido!", "error");
-        return;
-    }
-    if (!client.cliente || !client.whats || !client.painel || !client.vencimento) {
+
+    if (!client.cliente || !client.tela || !client.valor || !client.whats || !client.painel || !client.vencimento) {
         showToast("Por favor, preencha todos os campos obrigatórios!", "error");
         return;
     }
+
+    if (isNaN(client.valor) || client.valor <= 0) {
+        showToast("Por favor, insira um valor válido maior que zero!", "error");
+        return;
+    }
+
+    // Aplicar desconto ao valor
+    client.valor = (client.valor * (1 - client.desconto / 100)).toFixed(2);
+
     try {
         const method = editingIndex !== null ? 'PUT' : 'POST';
         const url = editingIndex !== null ? `${API_URL}/${clients[editingIndex].id}` : API_URL;
+        
+        console.log("Enviando requisição:", { method, url, body: JSON.stringify(client) });
+        
         const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(client)
         });
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
-        showToast("Cliente salvo com sucesso!", "success");
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro na API: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const savedClient = await response.json();
+        console.log("Resposta da API:", savedClient);
+
+        // Atualizar a lista local de clientes
+        if (editingIndex !== null) {
+            clients[editingIndex] = savedClient;
+        } else {
+            clients.push(savedClient);
+        }
+
+        // Limpar formulário e fechar modal
+        clientForm.reset();
+        closeModal();
         await loadClients();
+        showToast(`Cliente ${editingIndex !== null ? 'editado' : 'salvo'} com sucesso!`, "success");
     } catch (e) {
-        console.error('Erro ao salvar o cliente:', e);
-        showToast("Erro ao salvar o cliente!", "error");
+        console.error("Erro ao salvar o cliente:", e);
+        showToast(`Erro ao salvar o cliente: ${e.message}`, "error");
     }
 }
 
@@ -456,13 +507,13 @@ async function deleteClient(clientId) {
     if (!confirm("Tem certeza que deseja excluir? A exclusão será permanente!")) return;
     try {
         const response = await fetch(`${API_URL}/${clientId}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         clients = clients.filter(client => client.id !== clientId);
         await renderClients(clients);
         showToast("Cliente excluído com sucesso!", "success");
     } catch (e) {
         console.error("Erro ao excluir o cliente:", e);
-        showToast("Erro ao excluir o cliente!", "error");
+        showToast(`Erro ao excluir o cliente: ${e.message}`, "error");
     }
 }
 
@@ -492,14 +543,14 @@ async function renewClient(clientId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedClient)
         });
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         await loadClients();
         const renewalMessage = getWhatsAppMessage("renewal", updatedClient);
         window.open(`https://wa.me/55${updatedClient.whats}?text=${encodeURIComponent(renewalMessage)}`, "_blank");
         showToast("Cliente renovado com sucesso!", "success");
     } catch (e) {
         console.error("Erro ao renovar o cliente:", e);
-        showToast("Erro ao renovar o cliente!", "error");
+        showToast(`Erro ao renovar o cliente: ${e.message}`, "error");
     }
 }
 
@@ -523,14 +574,14 @@ function closePanelManager() {
 async function fetchPanels() {
     try {
         const response = await fetch(PANELS_API_URL);
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         const data = await response.json();
         updatePanelList(data);
         updatePanelSelect(data);
         return data;
     } catch (e) {
         console.error("Erro ao buscar painéis:", e);
-        showToast("Erro ao buscar os painéis.", "error");
+        showToast(`Erro ao buscar os painéis: ${e.message}`, "error");
         return [];
     }
 }
@@ -575,38 +626,57 @@ async function savePanel() {
     const panelForm = document.getElementById('panelForm');
     if (!panelForm) {
         console.error("Elemento com ID 'panelForm' não encontrado.");
+        showToast("Erro: Formulário de painel não encontrado!", "error");
         return;
     }
-    const id = document.getElementById('panelId').value;
-    const nome = document.getElementById('panelName').value;
-    const link = document.getElementById('panelLink').value;
+
+    const id = document.getElementById('panelId').value.trim();
+    const nome = document.getElementById('panelName').value.trim();
+    const link = document.getElementById('panelLink').value.trim();
     const valorCredito = parseFloat(document.getElementById('valorCredito').value) || 0;
-    const status = document.getElementById('panelStatus').value;
-    const panelData = { nome, link, valorCredito, status };
-    if (valorCredito < 0) {
-        showToast("O valor do crédito não pode ser negativo!", "error");
+    const status = document.getElementById('panelStatus').value.trim();
+
+    if (!nome || !link || !status) {
+        showToast("Por favor, preencha todos os campos obrigatórios!", "error");
         return;
     }
+
+    if (isNaN(valorCredito) || valorCredito < 0) {
+        showToast("O valor do crédito deve ser um número válido e não negativo!", "error");
+        return;
+    }
+
+    const panelData = { nome, link, valorCredito: valorCredito.toFixed(2), status };
+
     try {
-        const response = id
-            ? await fetch(`${PANELS_API_URL}/${id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(panelData),
-              })
-            : await fetch(PANELS_API_URL, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(panelData),
-              });
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
-        document.getElementById('panelForm').reset();
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${PANELS_API_URL}/${id}` : PANELS_API_URL;
+        
+        console.log("Enviando requisição de painel:", { method, url, body: JSON.stringify(panelData) });
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(panelData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro na API: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const savedPanel = await response.json();
+        console.log("Resposta da API (painel):", savedPanel);
+
+        // Limpar formulário e fechar modal
+        panelForm.reset();
         document.getElementById('panelId').value = '';
+        closePanelManager();
         await fetchPanels();
-        showToast("Painel salvo com sucesso!", "success");
+        showToast(`Painel ${id ? 'editado' : 'salvo'} com sucesso!`, "success");
     } catch (e) {
         console.error("Erro ao salvar o painel:", e);
-        showToast("Erro ao salvar o painel!", "error");
+        showToast(`Erro ao salvar o painel: ${e.message}`, "error");
     }
 }
 
@@ -631,12 +701,12 @@ async function deletePanel(id) {
     if (!confirm("Você tem certeza de que deseja excluir este painel?")) return;
     try {
         const response = await fetch(`${PANELS_API_URL}/${id}`, { method: "DELETE" });
-        if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         await fetchPanels();
         showToast("Painel excluído com sucesso!", "success");
     } catch (e) {
         console.error("Erro ao excluir o painel:", e);
-        showToast("Erro ao excluir o painel!", "error");
+        showToast(`Erro ao excluir o painel: ${e.message}`, "error");
     }
 }
 
@@ -664,7 +734,7 @@ function showToast(message, type = 'success') {
     toast.className = `toast ${type}`;
     toast.textContent = message;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), 5000); // Aumentado para 5s para facilitar leitura de erros
 }
 
 function toggleTheme() {
@@ -748,8 +818,8 @@ function setupWhatsAppMessagesForm() {
 
     whatsappMessagesForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        const dueMessage = document.getElementById('dueMessage').value;
-        const renewalMessage = document.getElementById('renewalMessage').value;
+        const dueMessage = document.getElementById('dueMessage').value.trim();
+        const renewalMessage = document.getElementById('renewalMessage').value.trim();
 
         if (!dueMessage || !renewalMessage) {
             showToast("Por favor, preencha ambas as mensagens!", "error");
@@ -764,13 +834,14 @@ function setupWhatsAppMessagesForm() {
 
         localStorage.setItem('dueMessage', dueMessage);
         localStorage.setItem('renewalMessage', renewalMessage);
-        showToast("Mensagens salvas com sucesso!", "success");
+        loadWhatsAppMessages(); // Recarregar mensagens na interface
         closeWhatsAppMessagesModal();
+        showToast("Mensagens salvas com sucesso!", "success");
     });
 
     applyMessagesBtn.addEventListener('click', function () {
-        const dueMessage = document.getElementById('dueMessage').value;
-        const renewalMessage = document.getElementById('renewalMessage').value;
+        const dueMessage = document.getElementById('dueMessage').value.trim();
+        const renewalMessage = document.getElementById('renewalMessage').value.trim();
 
         if (!dueMessage || !renewalMessage) {
             showToast("Por favor, preencha ambas as mensagens!", "error");
@@ -785,69 +856,68 @@ function setupWhatsAppMessagesForm() {
 
         localStorage.setItem('dueMessage', dueMessage);
         localStorage.setItem('renewalMessage', renewalMessage);
+        loadWhatsAppMessages(); // Recarregar mensagens na interface
         showToast("Mensagens aplicadas com sucesso!", "success");
     });
 }
 
-
-
-document.getElementById("gerencia-btn").addEventListener("click", async () => {
-  const modal = document.getElementById("modalGerencia");
-  const content = document.getElementById("modalContent");
-  
-  modal.classList.remove("hidden");
-  content.innerHTML = "<p class='text-center text-gray-500'>Carregando conteúdo...</p>";
-
-  try {
-    const response = await fetch("gerencia.html");
-    if (!response.ok) throw new Error("Erro ao carregar a página.");
     
-    const html = await response.text();
-    content.innerHTML = html;
-  } catch (err) {
-    content.innerHTML = `<p class='text-red-500 text-center'>Erro ao carregar o conteúdo: ${err.message}</p>`;
+    
+        
+// Função para formatar a data e hora
+  function formatDateTime() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // +1 porque meses começam em 0
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   }
-});
 
-document.getElementById("closeModal").addEventListener("click", () => {
-  document.getElementById("modalGerencia").classList.add("hidden");
-});
-
-
-document.getElementById("modalGerencia").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) {
-    e.currentTarget.classList.add("hidden");
+  // Função para atualizar a mensagem de boas-vindas
+  function updateWelcomeMessage(fullName) {
+    document.getElementById('welcomeMessage').textContent = 
+      `Bem vindo ${fullName}`;
   }
-});
 
+  // Função para verificar o token
+  async function verifyToken() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      window.location.href = 'index.html';
+      return;
+    }
 
-const modal = document.getElementById("modalGerencia");
-const modalBox = document.getElementById("modalBox");
-const iframe = document.getElementById("modalIframe");
-const closeBtn = document.getElementById("closeModal");
+    try {
+      const response = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
 
-document.getElementById("gerencia-btn").addEventListener("click", () => {
-  iframe.src = "https://ativacao-blue.vercel.app/filme.html"; // 🔗 Página externa
-  modal.classList.remove("hidden");
+      const result = await response.json();
+      if (!result.valid) {
+        localStorage.removeItem('authToken');
+        window.location.href = 'index.html';
+      } else {
+        // Token válido, inicia a atualização em tempo real com o nome completo
+        updateWelcomeMessage(result.fullName);
+        setInterval(() => updateWelcomeMessage(result.fullName), 1000);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar token:', error);
+      localStorage.removeItem('authToken');
+      window.location.href = 'index.html';
+    }
+  }
 
-  // Animação de entrada
-  setTimeout(() => {
-    modal.classList.remove("opacity-0");
-    modalBox.classList.remove("scale-95");
-  }, 10);
-});
+  // Verifica o token ao carregar a página
+  verifyToken();
 
-// Fechar modal
-function fecharModal() {
-  modal.classList.add("opacity-0");
-  modalBox.classList.add("scale-95");
-  setTimeout(() => {
-    modal.classList.add("hidden");
-    iframe.src = ""; // Limpa iframe ao fechar
-  }, 300);
-}
-
-closeBtn.addEventListener("click", fecharModal);
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) fecharModal();
-});
+  // Logout
+  document.getElementById('logoutB').addEventListener('click', () => {
+    localStorage.removeItem('authToken');
+    window.location.href = 'index.html';
+  });
