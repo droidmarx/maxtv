@@ -921,3 +921,33 @@ function setupWhatsAppMessagesForm() {
     localStorage.removeItem('authToken');
     window.location.href = 'index.html';
   });
+
+
+const openBtn = document.querySelector(".iframe-btn-gerencia");
+  const overlay = document.querySelector(".iframe-gerencia-overlay");
+  const iframe = document.querySelector(".iframe-gerencia");
+  const closeBtn = document.querySelector(".iframe-close-btn");
+
+  openBtn.addEventListener("click", () => {
+    iframe.src = "https://ativacao-blue.vercel.app/filme.html";
+    overlay.classList.add("show");
+  });
+
+  closeBtn.addEventListener("click", () => {
+    overlay.classList.remove("show");
+    setTimeout(() => {
+      iframe.src = ""; // limpa o iframe após a animação
+    }, 300);
+  });
+
+  // Fecha o iframe clicando fora do conteúdo (opcional)
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeBtn.click();
+  });
+
+
+
+
+
+
+
