@@ -923,7 +923,14 @@ function setupWhatsAppMessagesForm() {
   });
 
 
-const openBtn = document.querySelector(".iframe-btn-gerencia");
+
+
+
+
+
+
+
+  const openBtn = document.querySelector(".iframe-btn-gerencia");
   const overlay = document.querySelector(".iframe-gerencia-overlay");
   const iframe = document.querySelector(".iframe-gerencia");
   const closeBtn = document.querySelector(".iframe-close-btn");
@@ -944,9 +951,6 @@ const openBtn = document.querySelector(".iframe-btn-gerencia");
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeBtn.click();
   });
-
-
-
 
 
 
