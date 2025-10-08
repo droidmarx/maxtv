@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema</title>
-<link rel="icon" type="image/png" href="https://img.icons8.com/?size=96&id=22858&format=png">
-  <link
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="estilos.css">
 </head>
 
@@ -15,7 +12,7 @@
     <div class="container">
         <div class="top-right-actions">
             <div class="left-info">
-                <span id="welcomeMessage">Bem-vindo!</span>
+                <span id="welcomeMessage">Bem-vindo, Usuário!</span>
                 <span id="currentDateTime"></span>
             </div>
             <div class="right-buttons">
@@ -37,23 +34,11 @@
             </div>
         </div>
 
-        <div class="top-actions">
+         <div class="top-actions">
             <button id="new-client-btn"><i class="fas fa-user-plus"></i> Novo Cliente</button>
             <button id="panel-manager-btn" onclick="openPanelManager()"><i class="fas fa-cogs"></i> Gerenciar Painéis</button>
             <button id="whatsapp-messages-btn" onclick="openWhatsAppMessagesModal()"><i class="fab fa-whatsapp"></i> Configurar Mensagens</button>
-
-            <!-- Botão para abrir o iframe -->
-<button class="iframe-btn-gerencia">
-  <i class="fa-brands fa-youtube"></i> Gerência de pedidos
-</button>
-
-<!-- Container do iframe -->
-<div class="iframe-gerencia-overlay">
-  <div class="iframe-gerencia-content">
-    <button class="iframe-close-btn">&times;</button>
-    <iframe class="iframe-gerencia" src=""></iframe>
-  </div>
-</div>
+            <button id="gerencia-btn" onclick="window.location.href='gerencia.html'"><i class="fa-brands fa-youtube"></i> Gerência de pedidos</button>
         </div>
 
         <div id="filters">
@@ -94,7 +79,6 @@
             <div class="group-content" id="todos-content"></div>
         </div>
 
-        <!-- Modal Novo Cliente -->
         <div id="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -151,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Modal Gerenciar Painéis -->
         <div id="panelManagerModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -187,7 +170,6 @@
             </div>
         </div>
 
-        <!-- Modal Configuração de Mensagens WhatsApp -->
         <div id="whatsappMessagesModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -222,6 +204,8 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src"script.js"></script>
+
+    
 </body>
 </html>
