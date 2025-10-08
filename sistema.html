@@ -42,18 +42,17 @@
             <button id="panel-manager-btn" onclick="openPanelManager()"><i class="fas fa-cogs"></i> Gerenciar Painéis</button>
             <button id="whatsapp-messages-btn" onclick="openWhatsAppMessagesModal()"><i class="fab fa-whatsapp"></i> Configurar Mensagens</button>
 
-            <!-- Botão para abrir o iframe -->
-<button class="iframe-btn-gerencia">
-  <i class="fa-brands fa-youtube"></i> Gerência de pedidos
-</button>
+            <button id="gerencia-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition">
+              <i class="fa-brands fa-youtube"></i> Gerência de pedidos
+            </button>
 
-<!-- Container do iframe -->
-<div class="iframe-gerencia-overlay">
-  <div class="iframe-gerencia-content">
-    <button class="iframe-close-btn">&times;</button>
-    <iframe class="iframe-gerencia" src=""></iframe>
-  </div>
-</div>
+            <!-- Modal Gerência -->
+            <div id="modalGerencia" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 transition-opacity duration-300 opacity-0">
+              <div id="modalBox" class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] mx-4 relative transform scale-95 transition-transform duration-300 overflow-hidden">
+                <button id="closeModal" class="absolute top-3 right-4 text-gray-600 hover:text-red-500 text-3xl font-bold z-10">&times;</button>
+                <iframe id="modalIframe" src="" class="w-full h-full border-0"></iframe>
+              </div>
+            </div>
         </div>
 
         <div id="filters">
